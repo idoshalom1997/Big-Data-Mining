@@ -1,0 +1,427 @@
+## MidTerm 52019/52002 2023-24	
+
+# Authors: Daniel Rodan, Ido Shalom
+
+
+""" Query 1: """
+
+SELECT id, title, tags, answer_count, score
+FROM `bigquery-public-data.stackoverflow.posts_questions` 
+WHERE LOWER(tags) LIKE '%javascript%'
+ORDER BY score DESC
+LIMIT 5
+
+""" Query 1 Output (Json): """
+
+[{
+  "id": "5767325",
+  "title": "How can I remove a specific item from an array?",
+  "tags": "javascript|arrays",
+  "answer_count": "137",
+  "score": "10953"
+}, {
+  "id": "178325",
+  "title": "How do I check if an element is hidden in jQuery?",
+  "tags": "javascript|jquery|dom|visibility",
+  "answer_count": "65",
+  "score": "8447"
+}, {
+  "id": "1335851",
+  "title": "What does \"use strict\" do in JavaScript, and what is the reasoning behind it?",
+  "tags": "javascript|syntax|jslint|use-strict",
+  "answer_count": "31",
+  "score": "8264"
+}, {
+  "id": "503093",
+  "title": "How do I redirect to another webpage?",
+  "tags": "javascript|jquery|redirect",
+  "answer_count": "58",
+  "score": "7707"
+}, {
+  "id": "111102",
+  "title": "How do JavaScript closures work?",
+  "tags": "javascript|function|variables|scope|closures",
+  "answer_count": "86",
+  "score": "7623"
+}]
+
+// Note - If we want to pull all the rows, we will omit the call: "LIMIT 5"
+
+""" Query 2: """
+
+SELECT 
+    CASE WHEN LOWER(tags) LIKE '%javascript%' THEN 'javascript'
+    WHEN (LOWER(tags) LIKE '%java%' AND LOWER(tags) NOT LIKE '%javascript%') THEN 'java'
+    ELSE 'Other'
+    END AS Description,
+    COUNT(id) AS total_posts,
+    COUNT(CASE WHEN answer_count > 0 THEN 1 END) AS posts_with_answers,
+    AVG(answer_count) AS avg_answers,
+    AVG(view_count) AS avg_views,
+    AVG(score) AS avg_score
+FROM
+    bigquery-public-data.stackoverflow.posts_questions
+GROUP BY Description 
+HAVING Description NOT IN ('Other')
+ORDER BY Description DESC;
+
+
+""" Query 2 Output (Json): """
+
+[{
+  "Description": "javascript",
+  "total_posts": "2434159",
+  "posts_with_answers": "2094314",
+  "avg_answers": "1.5549756609983156",
+  "avg_views": "2859.4571028433224",
+  "avg_score": "2.07927542941936"
+}, {
+  "Description": "java",
+  "total_posts": "1900935",
+  "posts_with_answers": "1631221",
+  "avg_answers": "1.6071133415924257",
+  "avg_views": "3402.1347736771663",
+  "avg_score": "2.24779963544256"
+}]
+
+
+""" Query 3: """
+
+-- Question number 3
+SELECT 
+    CASE EXTRACT(DAYOFWEEK FROM creation_date)
+    WHEN 1 THEN 'Sunday'
+    WHEN 2 THEN 'Monday'
+    WHEN 3 THEN 'Tuesday'
+    WHEN 4 THEN 'Wednesday'
+    WHEN 5 THEN 'Thursday'
+    WHEN 6 THEN 'Friday'
+    WHEN 7 THEN 'Saturday'
+    END AS day_of_week,
+    COUNT(id) AS total_posts,
+    COUNT(CASE WHEN answer_count > 0 THEN 1 END) AS posts_with_answers,
+    AVG(answer_count) AS avg_answers,
+    AVG(view_count) AS avg_views,
+    AVG(score) AS avg_score
+FROM
+    `bigquery-public-data.stackoverflow.posts_questions`
+WHERE LOWER(tags) LIKE '%javascript%'
+GROUP BY day_of_week 
+ORDER BY total_posts DESC
+
+
+""" Query 3 Output (Json): """
+
+[{
+  "day_of_week": "Wednesday",
+  "total_posts": "418134",
+  "posts_with_answers": "359182",
+  "avg_answers": "1.5676577365150888",
+  "avg_views": "2890.126495334031",
+  "avg_score": "2.1087306939880519"
+}, {
+  "day_of_week": "Thursday",
+  "total_posts": "414798",
+  "posts_with_answers": "356302",
+  "avg_answers": "1.5694313858793922",
+  "avg_views": "2939.2093910771014",
+  "avg_score": "2.1526260975221674"
+}, {
+  "day_of_week": "Tuesday",
+  "total_posts": "410725",
+  "posts_with_answers": "352668",
+  "avg_answers": "1.5653466431310488",
+  "avg_views": "2924.0440026781903",
+  "avg_score": "2.1198125266297407"
+}, {
+  "day_of_week": "Monday",
+  "total_posts": "376293",
+  "posts_with_answers": "322260",
+  "avg_answers": "1.54429659866115",
+  "avg_views": "2855.3431979866759",
+  "avg_score": "2.0090036221773984"
+}, {
+  "day_of_week": "Friday",
+  "total_posts": "371657",
+  "posts_with_answers": "320208",
+  "avg_answers": "1.5763943636202187",
+  "avg_views": "2874.2597502535932",
+  "avg_score": "2.0808702647871549"
+}, {
+  "day_of_week": "Sunday",
+  "total_posts": "221613",
+  "posts_with_answers": "191690",
+  "avg_answers": "1.4982695058502886",
+  "avg_views": "2642.3997148181738",
+  "avg_score": "1.9640860418838246"
+}, {
+  "day_of_week": "Saturday",
+  "total_posts": "220939",
+  "posts_with_answers": "192004",
+  "avg_answers": "1.5235924848034974",
+  "avg_views": "2731.4435115574897",
+  "avg_score": "2.0430028197828367"
+}]
+
+""" Query 3  Answer:  """
+
+The day with the highest number of posts is Wednesday.
+The day with the least amount of posts is Saturday.
+Mostly, there is a positive correlation between popularity (views) and quality (score).
+Saturday is the only day where the trend changes, but not dramatically.
+
+
+""" Query 4: """
+
+SELECT A.tags, 
+       A.title, 
+       A.id AS question_id,
+       A.creation_date AS question_date,
+       REPLACE(A.body,'\n',' ') AS question_body, 
+       B.id AS answer_id,
+       B.creation_date AS answer_date,
+       REPLACE(B.body,'\n',' ') AS answer_body
+FROM `bigquery-public-data.stackoverflow.posts_questions` AS A
+INNER JOIN 
+`bigquery-public-data.stackoverflow.posts_answers` AS B
+ON A.id = B.parent_id
+WHERE LOWER(A.title) LIKE '%javascript%'
+AND LOWER(A.title) LIKE '%python%'
+ORDER BY question_id
+LIMIT 5 ;
+
+""" Query 4 Output (Json): """
+
+[{
+  "tags": "javascript|python",
+  "title": "Javascript equivalent of Python\u0027s locals()?",
+  "question_id": "39960",
+  "question_date": "2008-09-02 16:29:30.997000 UTC",
+  "question_body": "\u003cp\u003eIn Python one can get a dictionary of all local and global variables in the current scope with the built-in functions \u003ccode\u003elocals()\u003c/code\u003e and \u003ccode\u003eglobals()\u003c/code\u003e.  Is there some equivalent way of doing this in Javascript?  For instance, I would like to do something like the following:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar foo \u003d function(){ alert(\u0027foo\u0027); }; var bar \u003d function(){ alert(\u0027bar\u0027); };  var s \u003d \u0027foo\u0027; locals()[s](); // alerts \u0027foo\u0027 \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIs this at all possible, or should I just be using a local object for the lookup?\u003c/p\u003e",
+  "answer_id": "40173",
+  "answer_date": "2008-09-02 18:01:29.697000 UTC",
+  "answer_body": "\u003cul\u003e \u003cli\u003e\u003cp\u003elocals() - No. \u003c/p\u003e\u003c/li\u003e \u003cli\u003e\u003cp\u003eglobals() - Yes.\u003c/p\u003e\u003c/li\u003e \u003c/ul\u003e  \u003cp\u003e\u003ccode\u003ewindow\u003c/code\u003e is a reference to the global scope, like \u003ccode\u003eglobals()\u003c/code\u003e in python.\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003eglobals()[\"foo\"] \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eis the same as:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003ewindow[\"foo\"] \u003c/code\u003e\u003c/pre\u003e"
+}, {
+  "tags": "javascript|python",
+  "title": "Javascript equivalent of Python\u0027s locals()?",
+  "question_id": "39960",
+  "question_date": "2008-09-02 16:29:30.997000 UTC",
+  "question_body": "\u003cp\u003eIn Python one can get a dictionary of all local and global variables in the current scope with the built-in functions \u003ccode\u003elocals()\u003c/code\u003e and \u003ccode\u003eglobals()\u003c/code\u003e.  Is there some equivalent way of doing this in Javascript?  For instance, I would like to do something like the following:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar foo \u003d function(){ alert(\u0027foo\u0027); }; var bar \u003d function(){ alert(\u0027bar\u0027); };  var s \u003d \u0027foo\u0027; locals()[s](); // alerts \u0027foo\u0027 \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIs this at all possible, or should I just be using a local object for the lookup?\u003c/p\u003e",
+  "answer_id": "39982",
+  "answer_date": "2008-09-02 16:36:28.653000 UTC",
+  "answer_body": "\u003cp\u003eWell, I don\u0027t think that there is something like that in js. You can always use eval instead of locals(). Like this: \u003c/p\u003e  \u003cpre\u003e\u003ccode\u003eeval(s+\"()\"); \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eYou just have to know that actually function \u003cem\u003efoo\u003c/em\u003e exists.\u003c/p\u003e  \u003cp\u003e\u003cstrong\u003eEdit:\u003c/strong\u003e\u003c/p\u003e  \u003cp\u003eDon\u0027t use eval:) Use:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar functionName\u003d\"myFunctionName\"; window[functionName](); \u003c/code\u003e\u003c/pre\u003e"
+}, {
+  "tags": "javascript|python",
+  "title": "Javascript equivalent of Python\u0027s locals()?",
+  "question_id": "39960",
+  "question_date": "2008-09-02 16:29:30.997000 UTC",
+  "question_body": "\u003cp\u003eIn Python one can get a dictionary of all local and global variables in the current scope with the built-in functions \u003ccode\u003elocals()\u003c/code\u003e and \u003ccode\u003eglobals()\u003c/code\u003e.  Is there some equivalent way of doing this in Javascript?  For instance, I would like to do something like the following:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar foo \u003d function(){ alert(\u0027foo\u0027); }; var bar \u003d function(){ alert(\u0027bar\u0027); };  var s \u003d \u0027foo\u0027; locals()[s](); // alerts \u0027foo\u0027 \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIs this at all possible, or should I just be using a local object for the lookup?\u003c/p\u003e",
+  "answer_id": "40012",
+  "answer_date": "2008-09-02 16:50:34.750000 UTC",
+  "answer_body": "\u003cp\u003eI seem to remember Brendan Eich commented on this in a recent podcast; if i recall correctly, it\u0027s not being considered, as it adds unreasonable restrictions to optimization. He compared it to the \u003ccode\u003earguments\u003c/code\u003e local in that, while useful for varargs, its very existence removes the ability to guess at what a function will touch just by looking at its definition. \u003c/p\u003e  \u003cp\u003eBTW: i believe JS \u003cem\u003edid\u003c/em\u003e have support for accessing locals through the arguments local at one time - \u003ca href\u003d\"http://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Functions/arguments\" rel\u003d\"nofollow noreferrer\"\u003ea quick search\u003c/a\u003e shows this has been deprecated though.\u003c/p\u003e"
+}, {
+  "tags": "javascript|python",
+  "title": "Javascript equivalent of Python\u0027s locals()?",
+  "question_id": "39960",
+  "question_date": "2008-09-02 16:29:30.997000 UTC",
+  "question_body": "\u003cp\u003eIn Python one can get a dictionary of all local and global variables in the current scope with the built-in functions \u003ccode\u003elocals()\u003c/code\u003e and \u003ccode\u003eglobals()\u003c/code\u003e.  Is there some equivalent way of doing this in Javascript?  For instance, I would like to do something like the following:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar foo \u003d function(){ alert(\u0027foo\u0027); }; var bar \u003d function(){ alert(\u0027bar\u0027); };  var s \u003d \u0027foo\u0027; locals()[s](); // alerts \u0027foo\u0027 \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIs this at all possible, or should I just be using a local object for the lookup?\u003c/p\u003e",
+  "answer_id": "40035",
+  "answer_date": "2008-09-02 17:00:12.077000 UTC",
+  "answer_body": "\u003cp\u003e@e-bartek, I think that window[functionName] won\u0027t work if you in some closure, and the function name is local to that closure.  For example:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003efunction foo() {     var bar \u003d function () {         alert(\u0027hello world\u0027);     };     var s \u003d \u0027bar\u0027;     window[s](); // this won\u0027t work } \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIn this case, s is \u0027bar\u0027, but the function \u0027bar\u0027 only exists inside the scope of the function \u0027foo\u0027.  It is not defined in the window scope.\u003c/p\u003e  \u003cp\u003eOf course, this doesn\u0027t really answer the original question, I just wanted to chime in on this response.  I don\u0027t believe there is a way to do what the original question asked.\u003c/p\u003e"
+}, {
+  "tags": "javascript|python",
+  "title": "Javascript equivalent of Python\u0027s locals()?",
+  "question_id": "39960",
+  "question_date": "2008-09-02 16:29:30.997000 UTC",
+  "question_body": "\u003cp\u003eIn Python one can get a dictionary of all local and global variables in the current scope with the built-in functions \u003ccode\u003elocals()\u003c/code\u003e and \u003ccode\u003eglobals()\u003c/code\u003e.  Is there some equivalent way of doing this in Javascript?  For instance, I would like to do something like the following:\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar foo \u003d function(){ alert(\u0027foo\u0027); }; var bar \u003d function(){ alert(\u0027bar\u0027); };  var s \u003d \u0027foo\u0027; locals()[s](); // alerts \u0027foo\u0027 \u003c/code\u003e\u003c/pre\u003e  \u003cp\u003eIs this at all possible, or should I just be using a local object for the lookup?\u003c/p\u003e",
+  "answer_id": "40067",
+  "answer_date": "2008-09-02 17:14:25.007000 UTC",
+  "answer_body": "\u003cp\u003e@pkaeding\u003c/p\u003e  \u003cp\u003eYes, you\u0027re right. \u003cem\u003ewindow[functionName]()\u003c/em\u003e doesn\u0027t work in this case, but \u003cem\u003eeval\u003c/em\u003e does. If I needed something like this, I\u0027d create my own object to keep those functions together.\u003c/p\u003e  \u003cpre\u003e\u003ccode\u003evar func \u003d {}; func.bar \u003d ...; var s \u003d \"bar\"; func[s](); \u003c/code\u003e\u003c/pre\u003e"
+}]
+
+""" Query 5: """
+
+WITH MYCTE 
+AS 
+(
+SELECT
+id,
+display_name,
+location,
+reputation,
+about_me,
+website_url,
+ROW_NUMBER() OVER (PARTITION BY SPLIT(LOWER(TRIM(location)), ',')[OFFSET(0)] ORDER BY reputation DESC) AS rn,
+SPLIT(LOWER(TRIM(location)), ',')[OFFSET(0)] AS city_chopped,
+FROM
+`bigquery-public-data.stackoverflow.users`
+WHERE
+LOWER(location) LIKE '%, us%'
+AND LOWER(about_me) LIKE '%javascript%'
+AND SPLIT(LOWER(TRIM(location)), ',')[OFFSET(0)] IN ('new york', 'san francisco', 'los angeles', 'chicago', 'houston', 'alabama', 'alaska', 'arizona', 'california', 'colorado', 'florida', 'georgia', 'maryland', 'louisiana', 'north carolina', 'north dakota', 'ohio', 'oklahoma', 'oregon', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia', 'wisconsin', 'wyoming')
+)
+SELECT
+id,
+display_name,
+city_chopped AS location,
+reputation,
+about_me,
+website_url
+FROM MYCTE
+WHERE rn = 1
+ORDER BY reputation DESC
+LIMIT 5;
+
+
+""" Query 5 Output (Json): """
+
+[{
+  "id": "10149510",
+  "display_name": "Brian Adams",
+  "location": "new york",
+  "reputation": "38558",
+  "about_me": "\u003cp\u003e\u003cstrong\u003eTesting asynchronous code\u003c/strong\u003e\u003c/p\u003e\n\n\u003cul\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/52196951/10149510\"\u003eHow to get Timer Mocks and Promises to play nice\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/52686304/10149510\"\u003eHow to test \u003ccode\u003ePromise\u003c/code\u003e-based delay function\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/51645460/10149510\"\u003eWhy doesn\u0027t \u003ccode\u003esetImmediate\u003c/code\u003e time out when using fake timers\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/52226973/10149510\"\u003eHow to test a debounced function\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55859310/10149510\"\u003eTest resolve and reject callbacks of a \u003ccode\u003ePromise\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003cp\u003e\u003cstrong\u003eMocking dependencies\u003c/strong\u003e\u003c/p\u003e\n\n\u003cul\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/53269566/10149510\"\u003eMock a function in \u003ccode\u003eJest\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55697474/10149510\"\u003eMock an API module dependency\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55427441/10149510\"\u003eMock a \u003ccode\u003edefault\u003c/code\u003e export\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55193363/10149510\"\u003eMock an inner function in \u003ccode\u003eJest\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/52118844/10149510\"\u003eMock a Node.js module in TypeScript using \u003ccode\u003eJest\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55671939/10149510\"\u003eMock \u003ccode\u003edelay\u003c/code\u003e from \u003ccode\u003eRxJs\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003cp\u003e\u003cstrong\u003eGeneral testing\u003c/strong\u003e\u003c/p\u003e\n\n\u003cul\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/53513444/10149510\"\u003eHow to interactively debug \u003ccode\u003eJest\u003c/code\u003e tests in VSCode\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/51604652/10149510\"\u003eTest recursive calls\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/54403992/10149510\"\u003eHow does \u003ccode\u003eJest\u003c/code\u003e allow mutation of modules\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55622096/10149510\"\u003eTesting code using \u003ccode\u003easync / await\u003c/code\u003e with \u003ccode\u003eMocha\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/51696486/10149510\"\u003eUsing \u003ccode\u003eJest\u003c/code\u003e property matchers on arrays of objects\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55232277/10149510\"\u003eSpy on bound class method of a \u003ccode\u003eReact\u003c/code\u003e component\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/55545698/10149510\"\u003e\u003ccode\u003eUnhandledPromiseRejectionWarning\u003c/code\u003e during test\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://stackoverflow.com/a/53016854/10149510\"\u003eDoes \u003ccode\u003eJest\u003c/code\u003e have a \u003ccode\u003e--require\u003c/code\u003e option like \u003ccode\u003eMocha\u003c/code\u003e\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003chr\u003e\n\n\u003cul\u003e\n\u003cli\u003e\u003ccode\u003ejavascript\u003c/code\u003e silver - 1,549th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ejavascript\u003c/code\u003e bronze - 6,696th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003etypescript\u003c/code\u003e bronze - 216th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003enode.js\u003c/code\u003e bronze - 769th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ereactjs\u003c/code\u003e bronze - 312th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ejestjs\u003c/code\u003e gold - 2nd\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ejestjs\u003c/code\u003e silver - 2nd\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ejestjs\u003c/code\u003e bronze - 2nd\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003eunit-testing\u003c/code\u003e bronze - 196th\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003eenzyme\u003c/code\u003e bronze - 2nd\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003etesting\u003c/code\u003e bronze - 39th\u003c/li\u003e\n\u003c/ul\u003e",
+  "website_url": null
+}, {
+  "id": "950111",
+  "display_name": "Ahmad Awais",
+  "location": "san francisco",
+  "reputation": "29970",
+  "about_me": "\u003cp\u003e‍  Award-winning Dev Edutainer: \u003ca href\u003d\"https://nodecli.com/?utm_source\u003dstackoverflow.com\u0026amp;utm_medium\u003dreferral\u0026amp;utm_campaign\u003dStackOverflowProfile\" rel\u003d\"nofollow noreferrer\"\u003eBuild Node CLI Automation\u003c/a\u003e \u0026amp; \u003ca href\u003d\"https://VSCode.pro/?utm_source\u003dstackoverflow.com\u0026amp;utm_medium\u003dreferral\u0026amp;utm_campaign\u003dStackOverflowProfile\" rel\u003d\"nofollow noreferrer\"\u003eVSCode Powers Users →\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003e  NASA Ingenuity Mars Helicopter Mission contrbutor\u003c/p\u003e\n\u003cp\u003e  Sr Director Developer Relations DevRel RapidAPI\u003c/p\u003e\n\u003cp\u003e \u003ca href\u003d\"https://ahmadawais.com/google-developers-expert/\" rel\u003d\"nofollow noreferrer\"\u003eGoogle Developers Expert\u003c/a\u003e \u0026amp; \u003ca href\u003d\"https://ahmadawais.com/github-stars/\" rel\u003d\"nofollow noreferrer\"\u003eGitHub Star\u003c/a\u003e (8th of 65M devs)\u003c/p\u003e\n\u003cp\u003e Ridiculously hard-working \u003ca href\u003d\"https://AhmadAwais.com/?utm_source\u003dstackoverflow.com\u0026amp;utm_medium\u003dreferral\u0026amp;utm_campaign\u003dStackOverflowProfile\" rel\u003d\"nofollow noreferrer\"\u003eFull Stack Web Developer\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003e‍ Developer Advocate for JavaScript \u0026amp; Open Source\u003c/p\u003e\n\u003cp\u003e Node.js Community Committee Member | Maintainer Nodejs.dev\u003c/p\u003e\n\u003cp\u003e Open-Source Dev Advocate — \u003ca href\u003d\"https://github.com/ahmadawais\" rel\u003d\"nofollow noreferrer\"\u003ebuilt OSS used by millions of Developers\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eⓦ Regular \u003ca href\u003d\"https://ahmadawais.com/tag/wordpress-core-contributor/?utm_source\u003dstackoverflow.com\u0026amp;utm_medium\u003dreferral\u0026amp;utm_campaign\u003dStackOverflowProfile\" rel\u003d\"nofollow noreferrer\"\u003eWordPress Core Developer Contributor\u003c/a\u003e   TEDx Speaker\u003c/p\u003e\n\u003cp\u003e Hilarious comedian  Loves his wife (\u003ca href\u003d\"https://twitter.com/MaedahBatool/\" rel\u003d\"nofollow noreferrer\"\u003eMaedah\u003c/a\u003e)\u003c/p\u003e\n\u003cp\u003e Follow and say Hi \u003ca href\u003d\"https://twitter.com/mrahmadawais/\" rel\u003d\"nofollow noreferrer\"\u003e@MrAhmadAwais\u003c/a\u003e Subscribe to \u003ca href\u003d\"https://AhmadAwais.com/subscribe?utm_source\u003dstackoverflow.com\u0026amp;utm_medium\u003dreferral\u0026amp;utm_campaign\u003dStackOverflowProfile\" rel\u003d\"nofollow noreferrer\"\u003eThe DevTakeaway\u003c/a\u003e!\u003c/p\u003e\n\u003cp\u003e— Learn more \u003ca href\u003d\"https://AhmadAwais.com/about\" rel\u003d\"nofollow noreferrer\"\u003eabout Ahmad ↣\u003c/a\u003e\u003c/p\u003e",
+  "website_url": "https://AhmadAwais.com/"
+}, {
+  "id": "2486",
+  "display_name": "Josh Mein",
+  "location": "north carolina",
+  "reputation": "27562",
+  "about_me": "\u003cp\u003eMain areas of expertise:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eSQL\u003c/li\u003e\n\u003cli\u003eC#\u003c/li\u003e\n\u003cli\u003eJavascript \u0026amp; jQuery\u003c/li\u003e\n\u003cli\u003eASP.Net WebForms\u003c/li\u003e\n\u003cli\u003eASP.Net MVC\u003c/li\u003e\n\u003c/ul\u003e",
+  "website_url": "http://n/a"
+}, {
+  "id": "1048479",
+  "display_name": "Nick Tomlin",
+  "location": "chicago",
+  "reputation": "27552",
+  "about_me": "\u003cp\u003eI sling Java and JavaScript and try to write poetry in my spare time.\u003c/p\u003e",
+  "website_url": "http://www.nick-tomlin.com"
+}, {
+  "id": "862862",
+  "display_name": "Tyler Liu",
+  "location": "california",
+  "reputation": "18249",
+  "about_me": "\u003cp\u003eMy name is Tyler Liu and I am currently living near San Francisco bay area.\u003c/p\u003e\n\u003cp\u003eI\u0027ve created and participated lots of open source projects: \u003ca href\u003d\"https://github.com/tylerlong\" rel\u003d\"nofollow noreferrer\"\u003ehttps://github.com/tylerlong\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eHere is my technical blog: \u003ca href\u003d\"https://medium.com/@tylerlong\" rel\u003d\"nofollow noreferrer\"\u003ehttps://medium.com/@tylerlong\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eI call myself the super full stack engineer. I can program in JavaScript, C#, Java, Python, Ruby and Swift, each with more than 3 years hands-on experience. I can learn any new programming language in a week and be proficient in it in a month.\u003c/p\u003e\n\u003cp\u003eMy favorite language is JavaScript, because of Atwood\u0027s Law: \u0026quot;Any application that can be written in JavaScript, will eventually be written in JavaScript.\u0026quot;\u003c/p\u003e",
+  "website_url": "https://medium.com/@tylerlong"
+}]
+
+""" Query 5  Answer:  """
+
+We took only the cities in the US with 'US' attached to them.
+
+
+""" Query 6: """
+
+-- Questions
+WITH CTE1
+AS 
+(
+SELECT C.id, 
+       C.reputation,
+CASE WHEN COUNT(C.id) < 1000 THEN '0-999'
+WHEN COUNT(C.id) >= 1000 AND COUNT(C.id) < 2000 THEN '1000-1999'
+WHEN COUNT(C.id) >= 2000 AND COUNT(C.id) < 3000 THEN '2000-2999'
+END AS num_of_questions
+FROM `bigquery-public-data.stackoverflow.users` C
+LEFT JOIN `bigquery-public-data.stackoverflow.posts_questions` A
+ON C.id = A.owner_user_id
+GROUP BY C.id, C.reputation
+)
+SELECT num_of_questions, AVG(reputation) AS reputation_avg
+FROM CTE1
+GROUP BY num_of_questions
+ORDER BY num_of_questions;
+
+-- Answers
+
+WITH CTE2
+AS 
+(
+SELECT C.id, 
+       C.reputation,
+CASE WHEN COUNT(C.id) < 1000 THEN '0-999'
+WHEN COUNT(C.id) >= 1000 AND COUNT(C.id) < 2000 THEN '1000-1999'
+WHEN COUNT(C.id) >= 2000 AND COUNT(C.id) < 3000 THEN '2000-2999'
+WHEN COUNT(C.id) >= 3000 AND COUNT(C.id) < 4000 THEN '3000-3999'
+WHEN COUNT(C.id) >= 4000 AND COUNT(C.id) < 5000 THEN '4000-4999'
+WHEN COUNT(C.id) >= 5000 AND COUNT(C.id) < 6000 THEN '5000-5999'
+WHEN COUNT(C.id) >= 6000 AND COUNT(C.id) < 7000 THEN '6000-6999'
+WHEN COUNT(C.id) >= 7000 AND COUNT(C.id) < 8000 THEN '7000-7999'
+WHEN COUNT(C.id) >= 8000 AND COUNT(C.id) < 9000 THEN '8000-8999'
+WHEN COUNT(C.id) >= 9000 AND COUNT(C.id) < 10000 THEN '9000-9999'
+WHEN COUNT(C.id) >= 10000 THEN 'above 10000'
+END AS num_of_answers
+FROM `bigquery-public-data.stackoverflow.users` C
+LEFT JOIN `bigquery-public-data.stackoverflow.posts_answers` B
+ON C.id = B.owner_user_id
+GROUP BY C.id, C.reputation
+)
+SELECT num_of_answers, AVG(reputation) AS reputation_avg
+FROM CTE2
+GROUP BY num_of_answers
+ORDER BY num_of_answers;
+
+
+
+
+""" Query 6 Output (Json): """
+
+-- Questions
+
+[{
+  "num_of_questions": "0-999",
+  "reputation_avg": "97.891583973436056"
+}, {
+  "num_of_questions": "1000-1999",
+  "reputation_avg": "60588.092105263146"
+}, {
+  "num_of_questions": "2000-2999",
+  "reputation_avg": "109321.5"
+}]
+
+-- Answers
+
+[{
+  "num_of_answers": "0-999",
+  "reputation_avg": "82.613671433256144"
+}, {
+  "num_of_answers": "1000-1999",
+  "reputation_avg": "64227.27278106509"
+}, {
+  "num_of_answers": "2000-2999",
+  "reputation_avg": "113348.96588486141"
+}, {
+  "num_of_answers": "3000-3999",
+  "reputation_avg": "170224.52358490566"
+}, {
+  "num_of_answers": "4000-4999",
+  "reputation_avg": "199336.5"
+}, {
+  "num_of_answers": "5000-5999",
+  "reputation_avg": "232587.25423728814"
+}, {
+  "num_of_answers": "6000-6999",
+  "reputation_avg": "284761.27083333331"
+}, {
+  "num_of_answers": "7000-7999",
+  "reputation_avg": "315574.66666666663"
+}, {
+  "num_of_answers": "8000-8999",
+  "reputation_avg": "318147.6428571429"
+}, {
+  "num_of_answers": "9000-9999",
+  "reputation_avg": "381030.625"
+}, {
+  "num_of_answers": "above 10000",
+  "reputation_avg": "617516.66666666663"
+}]
+
+-- We can see that there is a positive connection between the number of question and answers of a user to it's reputation.
+-- As the number of question ans answers is higher, so as the reputation.
