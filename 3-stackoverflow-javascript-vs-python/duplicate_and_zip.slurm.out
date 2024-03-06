@@ -1,0 +1,29 @@
+Original files size:
+Size	File
+14M	stackoverflow_javascript_python_qa.csv
+152M	stackoverflow_javascript_python_qa_x10.csv
+152M	stackoverflow_javascript_python_qa_x10_sorted.csv
+ 
+times to compress stackoverflow_javascript_python_qa.csv
+
+real	0m0.574s
+user	0m0.369s
+sys	0m0.009s
+ 
+times to compress stackoverflow_javascript_python_qa_x10.csv
+
+real	0m4.097s
+user	0m3.690s
+sys	0m0.044s
+ 
+times to compress stackoverflow_javascript_python_qa_x10_sorted.csv
+
+real	0m9.121s
+user	0m1.202s
+sys	0m0.066s
+
+Compressed files size:
+Size	File
+4.0M	stackoverflow_javascript_python_qa.csv.gz
+34M	stackoverflow_javascript_python_qa_x10.csv.gz
+5.0M	stackoverflow_javascript_python_qa_x10_sorted.csv.gz
