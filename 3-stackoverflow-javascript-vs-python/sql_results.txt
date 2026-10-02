@@ -1,5 +1,4 @@
-## MidTerm 52019/52002 2023-24	
-
+## Stack Overflow: JavaScript vs Python - SQL queries and results (March 2024)
 # Authors: Daniel Rodan, Ido Shalom
 
 

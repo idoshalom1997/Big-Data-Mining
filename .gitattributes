@@ -1,0 +1,4 @@
+*.ipynb linguist-detectable=false
+*.sql linguist-detectable=true
+docs/** linguist-documentation
+*.txt linguist-documentation
